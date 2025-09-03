@@ -2,25 +2,25 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <cmath>
+#include "mouse_utility.h"
 
 constexpr int WIDTH {800};
 constexpr int HEIGHT {600};
 const sf::Color BG_COLOR(150,150,150);
 
 class Stroke{
-public:
-	/* These store two offset points for each point(left button trigger) and use them to draw rectangles
-	   of varying thickness instead of a 1 pixel lines*/
+private:
 	sf::VertexArray points;
 
-	Stroke():points(sf::Quads){}
-
-	/* These store single points*/
 	sf::Vector2f temp_pos;
 	bool temp_switch = true;
 
 	float thickness = 10.f;
 
+public:
+	Stroke(float aThickness):points(sf::Quads){
+		thickness = aThickness;
+	}
 
 	void add_vertex(sf::Vector2f pos, sf::Color color){
 		if (temp_switch){
@@ -63,18 +63,38 @@ public:
 		}
 	}
 
+	void add_click_vertex(sf::Vector2f pos, sf::Color color){
+		auto offset = thickness/2;
+		auto offset_point_one = sf::Vector2f(pos.x - offset, pos.y - offset);
+		auto offset_point_two = sf::Vector2f(pos.x + offset, pos.y - offset);
+		auto offset_point_three = sf::Vector2f(pos.x + offset, pos.y + offset);
+		auto offset_point_four = sf::Vector2f(pos.x - offset, pos.y + offset);
+
+		points.append(sf::Vertex(offset_point_one,color));
+		points.append(sf::Vertex(offset_point_two,color));
+		points.append(sf::Vertex(offset_point_three,color));
+		points.append(sf::Vertex(offset_point_four,color));
+	}
+
 	void draw(sf::RenderWindow& window){
 		int size = points.getVertexCount();
 		window.draw(points);
 	}
+
+	void change_thickness(float aThickness){
+		thickness = aThickness;
+	}
+
 };
 
 class SketchBoard{
+private:
+	
+	float stroke_thickness = 10.f;
 public:
 	std::vector<Stroke> strokes;
-
 	void add_stroke(){
-		Stroke stroke;
+		Stroke stroke(stroke_thickness);
 		strokes.push_back(stroke);
 	}
 
@@ -87,6 +107,16 @@ public:
 
 	void add_vertex(sf::Vector2f mouse_pos,sf::Color color){
 		strokes.back().add_vertex(mouse_pos,color);
+	}
+
+	void add_click_vertex(sf::Vector2f mouse_pos,sf::Color color){
+		strokes.back().add_click_vertex(mouse_pos,color);
+	}
+
+	void change_thickness(int delta){
+		stroke_thickness += delta;
+		stroke_thickness = std::clamp(stroke_thickness,1.f,25.f);
+		strokes.back().change_thickness(stroke_thickness);
 	}
 };
 
@@ -105,6 +135,8 @@ int main(){
 		std::cout << "Error loading the font file" << std::endl;
 		return -1;
 	}
+
+	Mouse mouse;
 
 	sf::Text fps;
 	fps.setFont(font);
@@ -127,31 +159,35 @@ int main(){
 			if (event.type == sf::Event::Closed){
 				window.close();
 			}
+			if (event.type == sf::Event::MouseWheelScrolled) {
+			    if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
+			        float delta = event.mouseWheelScroll.delta;
+			        sketch_board.change_thickness(delta);
+			    }
+			}
 		}
 
 	sf::Vector2i i_pos = sf::Mouse::getPosition(window);
 	sf::Vector2f mouse_pos = sf::Vector2f(i_pos);
 
-	if(sf::Mouse::isButtonPressed(sf::Mouse::Left)){
-		ispressed = true;
+	auto left_result = mouse.get_button_state(sf::Mouse::Left,window);
+	if (left_result.clicked){
+		// std::cout << "Click" << std::endl;
+		sketch_board.add_click_vertex(mouse_pos,sf::Color::Red);
+	}
+	if (left_result.dragging){
+		// std::cout << "dragging" << std::endl;
 		sketch_board.add_vertex(mouse_pos,sf::Color::Red);
 	}
-	else{
-		ispressed = false;
-	}
-
-	if (!(waspressed && ispressed)){
-		
-	}
-
-	if (!ispressed && waspressed){
+	if (left_result.release_transition){
+		// std::cout << "Added stroke" << std::endl;
 		sketch_board.add_stroke();
 	}
-	if(sf::Mouse::isButtonPressed(sf::Mouse::Right)){
+
+	auto right_result = mouse.get_button_state(sf::Mouse::Right,window);
+	if (right_result.clicked){
 		std::cout << sketch_board.strokes.size() << std::endl;
 	}
-
-	waspressed = ispressed;
 
 	window.clear(BG_COLOR);
 	sketch_board.draw(window);
