@@ -1,4 +1,13 @@
 #pragma once
+#include <iostream>
+#include <SFML/Graphics.hpp>
+#include <functional>
+
+enum class ButtonState{
+	Normal,
+	Hover,
+	Click
+};
 
 class Button{
 private:
@@ -14,13 +23,12 @@ private:
 	sf::Color normal_outline_color{120,120,120};
 	sf::Color normal_text_color{20,20,20};
 	std::function<void()> on_click;
-	std::string state{"normal"};
+	ButtonState state = ButtonState::Normal;
 
 public:
-
 	sf::Vector2f get_position();
-	void get_state(std::string aState);
 	void set_position(sf::Vector2f pos);
+	void set_state(ButtonState aState);
 	sf::Vector2f get_size();
 	void set_size(sf::Vector2f size);
 	void set_text(std::string aText);
@@ -33,4 +41,4 @@ public:
 	void set_function(std::function<void()> func);
 	void do_function();
 	void draw(sf::RenderWindow& window);
-}
+};

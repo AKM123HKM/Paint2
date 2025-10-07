@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <cmath>
 
-struct ButtonState{
+struct MouseState{
 	bool is_pressed{false};
 	bool was_pressed{false};
 	bool click_consumed{false};
@@ -23,15 +23,15 @@ struct ButtonResult{
 
 class Mouse{
 private:
-	ButtonState left_state;
-	ButtonState right_state;
-	ButtonState middle_state;
+	MouseState left_state;
+	MouseState right_state;
+	MouseState middle_state;
 	sf::Clock click_timer;
 	const double HOLD_THRESHOLD = 0.5;
 	const double DRAG_THRESHOLD = 4.0;
 	const double DOUBLE_CLICK_THRESHOLD = 1;
 
-	ButtonState& check_button(sf::Mouse::Button button);
+	MouseState& check_button(sf::Mouse::Button button);
 
 	float magnitude(sf::Vector2f vec);
 

@@ -1,7 +1,7 @@
 #include "mouse_utility.h"
 #include <iostream>
 
-ButtonState& Mouse::check_button(sf::Mouse::Button button){
+MouseState& Mouse::check_button(sf::Mouse::Button button){
 	if (sf::Mouse::Left == button){
 		return left_state;
 	}

@@ -4,145 +4,29 @@
 #include <cmath>
 #include <functional>
 #include "mouse_utility.h"
+#include "button_utility.h"
+#include "constants.h"
 
-constexpr int WIDTH {800};
-constexpr int HEIGHT {600};
-const sf::Color BG_COLOR(150,150,150);
-const sf::Color NORMAL_BUTTON_COLOR{85,85,85};
-const sf::Color NORMAL_OUTLINE_COLOR{90,90,90};
-const sf::Color NORMAL_TEXT_COLOR{170,170,170};
-const sf::Color HOVER_BUTTON_COLOR{55,55,55};
-const sf::Color HOVER_OUTLINE_COLOR{45,45,45};
-const sf::Color HOVER_TEXT_COLOR{200,200,200};
-const sf::Color CLICK_BUTTON_COLOR{20,20,20};
-const sf::Color CLICK_OUTLINE_COLOR{10,10,10};
-const sf::Color CLICK_TEXT_COLOR{200,200,200};
-sf::Font FONT;
-
-class Button{
-private:[]
-	sf::RectangleShape rect;
-	sf::Text text;
-	sf::Color hover_color{150,150,150};
-	sf::Color hover_outline_color{170,170,170};
-	sf::Color hover_text_color{50,50,50};
-	sf::Color click_color{200,200,200};
-	sf::Color click_outline_color{220,220,220};
-	sf::Color click_text_color{120,120,120};
-	sf::Color normal_color{100,100,100};
-	sf::Color normal_outline_color{120,120,120};
-	sf::Color normal_text_color{20,20,20};
-	std::function<void()> on_click;
-	std::string state{"normal"};
-public:
-	
-	sf::Vector2f get_position(){
-		return rect.getPosition();
-	}
-
-	void set_state(std::string aState){
-		if (aState == "normal" or aState == "hover" or aState == " click"){
-			aState = state;
-		}
-		else{
-			std::cout << "State should be 'normal' or 'hover' or 'click'." << std::endl;
-		}
-	}
-
-	void set_position(sf::Vector2f pos){
-		rect.setPosition(pos);
-	}
-
-	sf::Vector2f get_size(){
-		return rect.getSize();
-	}
-
-	void set_size(sf::Vector2f size){
-		rect.setSize(size);
-	}
-
-	void set_text(std::string aText){
-		text.setString(aText);
-	}
-
-	void set_text_position(sf::Vector2f pos = sf::Vector2f(-1,-1)){
-		if (pos.x == -1){
-			sf::Vector2f size = get_size();
-			sf::Vector2f button_pos = get_position();
-			std::cout << size.x << "," << size.y << std::endl;
-			std::cout << size.x/2 << "," << size.y/2 << std::endl;
-			std::cout << button_pos.x << "," << button_pos.y << std::endl;
-			float x = button_pos.x + size.x/2;
-			float y = button_pos.y + size.y/2;
-			std::cout << x << "," << y << std::endl;
-			auto text_rect = text.getLocalBounds();
-			text.setOrigin(text_rect.width/2,
-						   text_rect.height/2);
-			text.setPosition(sf::Vector2f(x,y));
-		}
-		else{
-			text.setPosition(pos);
-		}
-	}
-
-	void set_text_font(sf::Font& font){
-		text.setFont(font);
-	}
-
-	void set_normal_colors(sf::Color color, sf::Color outline_color, sf::Color text_color = sf::Color(20,20,20)){
-		normal_color = color;
-		normal_outline_color = outline_color;
-	}
-
-	void set_hover_colors(sf::Color color, sf::Color outline_color, sf::Color text_color = sf::Color(50,50,50)){
-		hover_color = color;
-		hover_outline_color = outline_color;
-	}
-
-	void set_click_colors(sf::Color color, sf::Color outline_color, sf::Color text_color = sf::Color(120,120,120)){
-		click_color = color;
-		click_outline_color = outline_color;
-	}
-
-	bool check_collision(sf::Vector2f mouse_pos){
-		auto pos = get_position();
-		auto size = get_size();
-		if(mouse_pos.x >= pos.x && mouse_pos.x <= size.x + pos.x){
-			if(mouse_pos.y >= pos.y && mouse_pos.y <= size.y + pos.y){
-				return true;
-			}
-		}
-		return false;
-	}
-
-	void set_function(std::function<void()> func){
-			on_click = func;
-		}
-
-	void do_function(){
-		on_click();
-	}
-
-	void draw(sf::RenderWindow& window){
-		if(state == "hover"){
-			rect.setFillColor(hover_color);
-			rect.setOutlineColor(hover_outline_color);
-			text.setFillColor(hover_text_color);
-		}
-		else if(state == "click"){
-			rect.setFillColor(click_color);
-			rect.setOutlineColor(click_outline_color);
-			text.setFillColor(click_text_color);
-		}
-		else{
-			rect.setFillColor(normal_color);
-			rect.setOutlineColor(normal_outline_color);
-			text.setFillColor(normal_text_color);
-		}
-		window.draw(rect);
-		window.draw(text);
-	}
+enum class WindowState{
+	Main,
+	Color_Picker
 };
+
+WindowState window_state = WindowState::Main;
+
+Button create_button(sf::Vector2f pos, sf::Vector2f size, std::string text){
+	Button button;
+	button.set_position(pos);
+	button.set_size(size);
+	button.set_normal_colors(NORMAL_BUTTON_COLOR,NORMAL_OUTLINE_COLOR,NORMAL_TEXT_COLOR);
+	button.set_hover_colors(HOVER_BUTTON_COLOR,HOVER_OUTLINE_COLOR,HOVER_TEXT_COLOR);
+	button.set_click_colors(CLICK_BUTTON_COLOR,CLICK_OUTLINE_COLOR,CLICK_TEXT_COLOR);
+	button.set_text(text);
+	button.set_text_font(FONT);
+	button.set_text_position();
+
+	return button;
+}
 
 class Stroke{
 private:
@@ -289,34 +173,148 @@ public:
 class ButtonUi{
 public:
 	Button thickness_button;
+	Button color_button;
 
 	ButtonUi(){
-		create_thickness_button();
-	}
+		thickness_button = create_button(THICKNESS_BUTTON_POS,
+										 THICKNESS_BUTTON_SIZE,
+										 THICKNESS_BUTTON_TEXT);
+		color_button = create_button(COLOR_BUTTON_POS,
+									 COLOR_BUTTON_SIZE,
+									 COLOR_BUTTON_TEXT);
+		color_button.set_function([this](){if(window_state == WindowState::Main)window_state = WindowState::Color_Picker;
+										   else window_state = WindowState::Main;});
+	}	
 
-	void create_thickness_button(){
-		thickness_button.set_position(sf::Vector2f(50,100));
-		thickness_button.set_size(sf::Vector2f(200,60));
-		thickness_button.set_normal_colors(NORMAL_BUTTON_COLOR,NORMAL_OUTLINE_COLOR,NORMAL_TEXT_COLOR);
-		thickness_button.set_hover_colors(HOVER_BUTTON_COLOR,HOVER_OUTLINE_COLOR,HOVER_TEXT_COLOR);
-		thickness_button.set_click_colors(CLICK_BUTTON_COLOR,CLICK_OUTLINE_COLOR,CLICK_TEXT_COLOR);
-		thickness_button.set_text("Thickness");
-		thickness_button.set_text_font(FONT);
-		thickness_button.set_text_position();
-	}
-
-	void check_collision(sf::Vector2f mouse_pos){
+	void check_collision(sf::Vector2f mouse_pos,ButtonResult left_result){
 		if (thickness_button.check_collision(mouse_pos)){
-			thickness_button.set_state("hover");
+			thickness_button.set_state(ButtonState::Hover);
 		}
 		else{
-			thickness_button.set_state("normal");
+			thickness_button.set_state(ButtonState::Normal);
+		}
+
+		if (color_button.check_collision(mouse_pos)){
+			color_button.set_state(ButtonState::Hover);
+			if (left_result.clicked){
+				color_button.set_state(ButtonState::Click);
+				color_button.do_function();
+			}
+		}
+		else{
+			color_button.set_state(ButtonState::Normal);
 		}
 	}
 
 	void draw(sf::RenderWindow& window){
 		thickness_button.draw(window);
+		color_button.draw(window);
 	}
+};
+
+class ColorPicker{
+private:
+	sf::Sprite color_picker;
+	sf::Texture texture;
+	sf::Image image;
+	int pickerWidth = COLOR_PICKER_WIDTH;
+	int pickerHeight = COLOR_PICKER_WIDTH;
+	int blueValue = 100;
+	Button blue_up;
+	Button blue_down;
+
+	void create_image(){
+
+	image.create(pickerWidth, pickerHeight);
+	for(int x=0; x<pickerWidth; x++){
+	    for(int y=0; y<pickerHeight; y++){
+	        image.setPixel(x, y, sf::Color(x*255/pickerWidth, y*255/pickerHeight, blueValue));
+			}
+		}
+	}
+
+public:
+
+	ColorPicker(){
+		blue_up = create_button(BLUE_UP_POS,
+								BLUE_UP_SIZE,
+								BLUE_UP_TEXT);
+		/* "[this]" means capture the value of increase_blueValue from this class ColorPicker
+		since it needs the class to be called outside the main class*/
+		blue_up.set_function([this]() { if(blueValue < 255) blueValue++; });
+
+		blue_down = create_button(BLUE_DOWN_POS,
+								  BLUE_DOWN_SIZE,
+								  BLUE_DOWN_TEXT);
+		blue_down.set_function([this]() { if(blueValue > 0) blueValue--;});
+
+		create_image();
+		texture.loadFromImage(image);
+		color_picker.setTexture(texture);
+		color_picker.setPosition(COLOR_PICKER_POS);
+	}
+
+	void handle_button_collisions(sf::Vector2f mouse_pos,ButtonResult left_result){
+		if (blue_up.check_collision(mouse_pos)){
+			blue_up.set_state(ButtonState::Hover);
+			if (left_result.clicked){
+				blue_up.set_state(ButtonState::Click);
+				blue_up.do_function();
+				create_image();
+				texture.loadFromImage(image);
+				color_picker.setTexture(texture);
+			}
+			else if (left_result.held){
+				blue_up.do_function();
+				create_image();
+				texture.loadFromImage(image);
+				color_picker.setTexture(texture);
+			}
+		}
+		else{
+			blue_up.set_state(ButtonState::Normal);
+		}
+
+		if (blue_down.check_collision(mouse_pos)){
+			blue_down.set_state(ButtonState::Hover);
+			if (left_result.clicked){
+				blue_down.set_state(ButtonState::Click);
+				blue_down.do_function();
+				create_image();
+				texture.loadFromImage(image);
+				color_picker.setTexture(texture);
+			}
+			else if (left_result.held){
+				blue_down.do_function();
+				create_image();
+				texture.loadFromImage(image);
+				color_picker.setTexture(texture);
+			}
+		}
+		else{
+			blue_down.set_state(ButtonState::Normal);
+		}
+	}
+
+	sf::Color handle_color_picking(sf::Vector2f mouse_pos,ButtonResult left_result){
+		if (left_result.clicked){
+			if (mouse_pos.x >= COLOR_PICKER_POS.x & mouse_pos.x <= COLOR_PICKER_WIDTH + COLOR_PICKER_POS.x){
+				if (mouse_pos.y >= COLOR_PICKER_POS.y & mouse_pos.y <= COLOR_PICKER_HEIGHT + COLOR_PICKER_POS.y){
+					int red = (mouse_pos.x - COLOR_PICKER_POS.x) * 255/COLOR_PICKER_WIDTH;
+					int green = (mouse_pos.y - COLOR_PICKER_POS.y) * 255/COLOR_PICKER_HEIGHT;
+					return sf::Color(red,green,blueValue);
+				}
+			}
+		}
+		return sf::Color(0,0,0,0);
+	}
+
+	void draw(sf::RenderWindow& window){
+		window.draw(color_picker);
+		blue_up.draw(window);
+		blue_down.draw(window);
+	}
+
 };
 
 int main(){
@@ -331,11 +329,13 @@ int main(){
 		return -1;
 	}
 
-	SketchBoard sketch_board(sf::Vector2f(100,0),WIDTH - 100,HEIGHT);
-
 	Mouse mouse;
 
+	SketchBoard sketch_board(SKETCHBOARD_POS,SKETCHBOARD_WIDTH,SKETCHBOARD_HEIGHT);
+	sf::Color stroke_color = sf::Color(255,0,0);
 	ButtonUi buttonui;
+
+	ColorPicker color_window;
 
 	sf::Text fps;
 	fps.setFont(FONT);
@@ -355,47 +355,59 @@ int main(){
 			if (event.type == sf::Event::Closed){
 				window.close();
 			}
-			if (event.type == sf::Event::MouseWheelScrolled) {
-			    if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
-			        float delta = event.mouseWheelScroll.delta;
-			        sketch_board.change_thickness(delta);
-			    }
-			}
+			if (window_state == WindowState::Main)
+				if (event.type == sf::Event::MouseWheelScrolled) {
+				    if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
+				        float delta = event.mouseWheelScroll.delta;
+				        sketch_board.change_thickness(delta);
+				    }
+				}
 		}
 
 	sf::Vector2i i_pos = sf::Mouse::getPosition(window);
 	sf::Vector2f mouse_pos = sf::Vector2f(i_pos);
 
 	auto left_result = mouse.get_button_state(sf::Mouse::Left,window);
-	buttonui.check_collision(mouse_pos);
-	if (sketch_board.check_dimensions(mouse_pos)){
-		if (left_result.clicked){
-			// std::cout << "Click" << std::endl;
-			sketch_board.add_click_vertex(mouse_pos,sf::Color::Red);
+	buttonui.check_collision(mouse_pos,left_result);
+	if (window_state == WindowState::Main)
+		if (sketch_board.check_dimensions(mouse_pos)){
+			if (left_result.clicked){
+				// std::cout << "Click" << std::endl;
+				sketch_board.add_click_vertex(mouse_pos,stroke_color);
+			}
+			if (left_result.dragging){
+				// std::cout << "dragging" << std::endl;
+				sketch_board.add_vertex(mouse_pos,stroke_color);
+			}
+			if (left_result.release_transition){
+				// std::cout << "Added stroke" << std::endl;
+				sketch_board.add_stroke();
+			}
 		}
-		if (left_result.dragging){
-			// std::cout << "dragging" << std::endl;
-			sketch_board.add_vertex(mouse_pos,sf::Color::Red);
-		}
-		if (left_result.release_transition){
-			// std::cout << "Added stroke" << std::endl;
+		// In case mouse gets out of bounds of sketch board add a new stroke
+		else if (left_result.pressed){
 			sketch_board.add_stroke();
 		}
-	}
-	// In case mouse gets out of bounds of sketch board add a new stroke
-	else if (left_result.pressed){
-		sketch_board.add_stroke();
-	}
 
-	auto right_result = mouse.get_button_state(sf::Mouse::Right,window);
-	if (right_result.clicked){
-		std::cout << sketch_board.get_strokes_count() << std::endl;
-	}
-
+		auto right_result = mouse.get_button_state(sf::Mouse::Right,window);
+		if (right_result.clicked){
+			std::cout << sketch_board.get_strokes_count() << std::endl;
+		}
+	
 	window.clear(BG_COLOR);
 	sketch_board.draw(window);
 	window.draw(fps);
 	buttonui.draw(window);
+
+	if(window_state == WindowState::Color_Picker){
+		color_window.handle_button_collisions(mouse_pos,left_result);
+		sf::Color color = color_window.handle_color_picking(mouse_pos,left_result);
+		if (!(color == INVALID_COLOR)){
+			stroke_color = color;
+		}
+		color_window.draw(window);
+	}
+
 	window.display();
 	}
 
