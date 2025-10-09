@@ -28,6 +28,26 @@ Button create_button(sf::Vector2f pos, sf::Vector2f size, std::string text){
 	return button;
 }
 
+Slider create_slider(sf::Vector2f slider_pos, sf::Vector2f track_size, sf::Vector2f handle_size, 
+					 int min_value, int max_value ,float slider_value = 0){
+	Slider slider;
+	slider.set_track_position(slider_pos);
+	slider.set_track_size(track_size);
+	slider.set_handle_size(handle_size);
+	slider.set_min_max_value(min_value,max_value);
+	if (slider_value >= min_value & slider_value <= max_value){
+		slider.set_slider_value(slider_value);
+	}
+	else{
+		slider.set_slider_value((min_value + max_value)/2);
+	}
+	slider.set_track_size_offset(TRACK_SIZE_OFFSET);
+	slider.set_track_colors(GREEN_COLOR,RED_COLOR);
+	slider.set_handle_colors(HANDLE_HOVER_COLOR, HANDLE_CLICK_COLOR, HANDLE_NORMAL_COLOR);
+
+	return slider;
+}
+
 class Stroke{
 private:
 	sf::VertexArray points;
@@ -161,7 +181,13 @@ public:
 
 	void change_thickness(int delta){
 		stroke_thickness += delta;
-		stroke_thickness = std::clamp(stroke_thickness,1.f,25.f);
+		stroke_thickness = std::clamp(stroke_thickness,static_cast<float>(MIN_THICKNESS),static_cast<float>(MAX_THICKNESS));
+		strokes.back().change_thickness(stroke_thickness);
+	}
+
+	void set_thickness(float thickness){
+		stroke_thickness = thickness;
+		stroke_thickness = std::clamp(stroke_thickness,static_cast<float>(MIN_THICKNESS),static_cast<float>(MAX_THICKNESS));
 		strokes.back().change_thickness(stroke_thickness);
 	}
 
@@ -174,11 +200,20 @@ class ButtonUi{
 public:
 	Button thickness_button;
 	Button color_button;
+	Slider thickness_slider;
 
 	ButtonUi(){
 		thickness_button = create_button(THICKNESS_BUTTON_POS,
 										 THICKNESS_BUTTON_SIZE,
 										 THICKNESS_BUTTON_TEXT);
+
+		thickness_slider = create_slider(THICKNESS_SLIDER_POS,
+										 THICKNESS_SLIDER_SIZE,
+										 THICKNESS_SLIDER_HANDLE_SIZE,
+										 MIN_THICKNESS,
+										 MAX_THICKNESS,
+										 DEFAULT_THICKNESS);
+
 		color_button = create_button(COLOR_BUTTON_POS,
 									 COLOR_BUTTON_SIZE,
 									 COLOR_BUTTON_TEXT);
@@ -186,13 +221,12 @@ public:
 										   else window_state = WindowState::Main;});
 	}	
 
+	float get_thickness(){
+		return thickness_slider.get_slider_value();
+	}
+
 	void check_collision(sf::Vector2f mouse_pos,ButtonResult left_result){
-		if (thickness_button.check_collision(mouse_pos)){
-			thickness_button.set_state(ButtonState::Hover);
-		}
-		else{
-			thickness_button.set_state(ButtonState::Normal);
-		}
+		thickness_slider.update(mouse_pos,left_result);
 
 		if (color_button.check_collision(mouse_pos)){
 			color_button.set_state(ButtonState::Hover);
@@ -208,6 +242,7 @@ public:
 
 	void draw(sf::RenderWindow& window){
 		thickness_button.draw(window);
+		thickness_slider.draw(window);
 		color_button.draw(window);
 	}
 };
@@ -220,8 +255,7 @@ private:
 	int pickerWidth = COLOR_PICKER_WIDTH;
 	int pickerHeight = COLOR_PICKER_WIDTH;
 	int blueValue = 100;
-	Button blue_up;
-	Button blue_down;
+	Slider blue_slider;
 
 	void create_image(){
 
@@ -236,17 +270,9 @@ private:
 public:
 
 	ColorPicker(){
-		blue_up = create_button(BLUE_UP_POS,
-								BLUE_UP_SIZE,
-								BLUE_UP_TEXT);
-		/* "[this]" means capture the value of increase_blueValue from this class ColorPicker
-		since it needs the class to be called outside the main class*/
-		blue_up.set_function([this]() { if(blueValue < 255) blueValue++; });
-
-		blue_down = create_button(BLUE_DOWN_POS,
-								  BLUE_DOWN_SIZE,
-								  BLUE_DOWN_TEXT);
-		blue_down.set_function([this]() { if(blueValue > 0) blueValue--;});
+		blue_slider = create_slider(BLUE_SLIDER_POS,BLUE_SLIDER_TRACK_SIZE,
+									BLUE_SLIDER_HANDLE_SIZE,MIN_BLUE_VALUE,
+									MAX_BLUE_VALUE,BLUE_SLIDER_VALUE);
 
 		create_image();
 		texture.loadFromImage(image);
@@ -255,45 +281,8 @@ public:
 	}
 
 	void handle_button_collisions(sf::Vector2f mouse_pos,ButtonResult left_result){
-		if (blue_up.check_collision(mouse_pos)){
-			blue_up.set_state(ButtonState::Hover);
-			if (left_result.clicked){
-				blue_up.set_state(ButtonState::Click);
-				blue_up.do_function();
-				create_image();
-				texture.loadFromImage(image);
-				color_picker.setTexture(texture);
-			}
-			else if (left_result.held){
-				blue_up.do_function();
-				create_image();
-				texture.loadFromImage(image);
-				color_picker.setTexture(texture);
-			}
-		}
-		else{
-			blue_up.set_state(ButtonState::Normal);
-		}
-
-		if (blue_down.check_collision(mouse_pos)){
-			blue_down.set_state(ButtonState::Hover);
-			if (left_result.clicked){
-				blue_down.set_state(ButtonState::Click);
-				blue_down.do_function();
-				create_image();
-				texture.loadFromImage(image);
-				color_picker.setTexture(texture);
-			}
-			else if (left_result.held){
-				blue_down.do_function();
-				create_image();
-				texture.loadFromImage(image);
-				color_picker.setTexture(texture);
-			}
-		}
-		else{
-			blue_down.set_state(ButtonState::Normal);
-		}
+		blue_slider.update(mouse_pos,left_result);
+		blueValue = blue_slider.get_slider_value();
 	}
 
 	sf::Color handle_color_picking(sf::Vector2f mouse_pos,ButtonResult left_result){
@@ -310,9 +299,11 @@ public:
 	}
 
 	void draw(sf::RenderWindow& window){
+		create_image();
+		texture.loadFromImage(image);
+		color_picker.setTexture(texture);
 		window.draw(color_picker);
-		blue_up.draw(window);
-		blue_down.draw(window);
+		blue_slider.draw(window);
 	}
 
 };
@@ -324,11 +315,6 @@ int main(){
 	sf::Clock fps_clock;
 	double dt;
 
-	if(!FONT.loadFromFile("PoetsenOne-Regular.ttf")){
-		std::cout << "Error loading the font file" << std::endl;
-		return -1;
-	}
-
 	Mouse mouse;
 
 	SketchBoard sketch_board(SKETCHBOARD_POS,SKETCHBOARD_WIDTH,SKETCHBOARD_HEIGHT);
@@ -336,6 +322,11 @@ int main(){
 	ButtonUi buttonui;
 
 	ColorPicker color_window;
+
+	if(!FONT.loadFromFile("PoetsenOne-Regular.ttf")){
+		std::cout << "Error loading the font file" << std::endl;
+		return -1;
+	}	
 
 	sf::Text fps;
 	fps.setFont(FONT);
@@ -393,7 +384,8 @@ int main(){
 		if (right_result.clicked){
 			std::cout << sketch_board.get_strokes_count() << std::endl;
 		}
-	
+
+	sketch_board.set_thickness(buttonui.get_thickness());
 	window.clear(BG_COLOR);
 	sketch_board.draw(window);
 	window.draw(fps);
@@ -407,7 +399,7 @@ int main(){
 		}
 		color_window.draw(window);
 	}
-
+	
 	window.display();
 	}
 

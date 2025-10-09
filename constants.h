@@ -5,6 +5,9 @@
 constexpr int WIDTH {800};
 constexpr int HEIGHT {600};
 const sf::Color BG_COLOR(150,150,150);
+const sf::Color GREEN_COLOR{0,255,0};
+const sf::Color RED_COLOR{255,0,0};
+
 // Normal state
 const sf::Color NORMAL_BUTTON_COLOR{120, 120, 120};
 const sf::Color NORMAL_OUTLINE_COLOR{140, 140, 140};
@@ -32,18 +35,31 @@ const sf::Vector2f THICKNESS_BUTTON_SIZE = {80,20};
 const sf::Vector2f THICKNESS_BUTTON_POS = {10,50};
 const std::string THICKNESS_BUTTON_TEXT = "Thickness";
 
+const sf::Vector2f THICKNESS_SLIDER_POS = {10,80};
+const sf::Vector2f THICKNESS_SLIDER_SIZE = {80,20};
+const sf::Vector2f THICKNESS_SLIDER_HANDLE_SIZE = {20,20};
+const int MIN_THICKNESS = 5;
+const int MAX_THICKNESS = 50;
+const float DEFAULT_THICKNESS = 10;
+
 const sf::Vector2f COLOR_BUTTON_SIZE = {80,20};
-const sf::Vector2f COLOR_BUTTON_POS = {10,80};
+const sf::Vector2f COLOR_BUTTON_POS = {10,110};
 const std::string COLOR_BUTTON_TEXT = "Color";
 
 const int COLOR_PICKER_WIDTH = 255;
 const int COLOR_PICKER_HEIGHT = 255;
 const sf::Vector2f COLOR_PICKER_POS = {100,20};
 
-const sf::Vector2f BLUE_UP_POS = {100,275};
-const sf::Vector2f BLUE_UP_SIZE = {80,10};
-const std::string BLUE_UP_TEXT = "/\\";
+//BLUE VALUE SLIDER
+const sf::Vector2f BLUE_SLIDER_POS = {100,280};
+const sf::Vector2f BLUE_SLIDER_TRACK_SIZE = {255,15};
+const sf::Vector2f BLUE_SLIDER_HANDLE_SIZE = {15,15};
+const int MIN_BLUE_VALUE = 0;
+const int MAX_BLUE_VALUE = 255;
+const float BLUE_SLIDER_VALUE = 10;
 
-const sf::Vector2f BLUE_DOWN_POS = {100,290};
-const sf::Vector2f BLUE_DOWN_SIZE = {80,10};
-const std::string BLUE_DOWN_TEXT = "\\/";
+// SLIDERS
+const int TRACK_SIZE_OFFSET = 4;
+const sf::Color HANDLE_HOVER_COLOR = HOVER_BUTTON_COLOR;
+const sf::Color HANDLE_CLICK_COLOR = CLICK_BUTTON_COLOR;
+const sf::Color HANDLE_NORMAL_COLOR = NORMAL_BUTTON_COLOR;

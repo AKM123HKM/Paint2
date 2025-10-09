@@ -44,7 +44,11 @@ ButtonResult Mouse::get_button_state(sf::Mouse::Button button,sf::RenderWindow& 
 		if (!(button_state.prev_mouse_pos.x == -1)){
 			float delta = magnitude(button_state.prev_mouse_pos - get_mouse_position(window));
 			if (delta >= HOLD_THRESHOLD){
+				result.drag_value = get_mouse_position(window) - button_state.prev_mouse_pos;
 				result.dragging = true;
+			}
+			else{
+				result.drag_value = {0,0};
 			}
 		}
 		button_state.prev_mouse_pos = get_mouse_position(window);

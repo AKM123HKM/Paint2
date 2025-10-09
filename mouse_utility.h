@@ -19,6 +19,7 @@ struct ButtonResult{
 	bool double_clicked{false};
 	bool press_transition{false};
 	bool release_transition{false};
+	sf::Vector2f drag_value{0,0};
 };
 
 class Mouse{

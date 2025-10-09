@@ -2,6 +2,7 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <functional>
+#include "mouse_utility.h"
 
 enum class ButtonState{
 	Normal,
@@ -40,5 +41,42 @@ public:
 	bool check_collision(sf::Vector2f mouse_pos);
 	void set_function(std::function<void()> func);
 	void do_function();
+	void draw(sf::RenderWindow& window);
+};
+
+class Slider{
+private:
+	sf::RectangleShape filled;
+	sf::RectangleShape remaining;
+	Button handle;
+	sf::Vector2f position = {0,0};
+	sf::Vector2f track_size = {100,20};
+	int track_size_offset = 4;
+	int min_val = 0;
+	int max_val = 100;
+
+	enum class State{
+		Selected,
+		Not_Selected
+	};
+
+	State slider_state = State::Not_Selected;
+public:
+	void set_track_size(sf::Vector2f aSize);
+	sf::Vector2f get_track_size();
+	void set_track_position(sf::Vector2f aPosition);
+	sf::Vector2f get_track_position();
+	void set_track_colors(sf::Color filled_track_color, sf::Color remaining_track_color);
+	void set_handle_size(sf::Vector2f aSize);
+	sf::Vector2f get_handle_size();
+	void set_handle_colors(sf::Color hover_color, sf::Color click_color, sf::Color normal_color);
+	void set_min_max_value(int aMin, int aMax);
+	void set_track_size_offset(int offset);
+	int get_track_size_offset();
+	float get_slider_value();
+	void set_slider_value(float value);
+	void update_track();
+	void update_handle(sf::Vector2f mouse_pos, ButtonResult left_result);
+	void update(sf::Vector2f mouse_pos, ButtonResult left_result);
 	void draw(sf::RenderWindow& window);
 };
