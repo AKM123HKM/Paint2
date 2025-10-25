@@ -323,7 +323,7 @@ int main(){
 
 	ColorPicker color_window;
 
-	if(!FONT.loadFromFile("PoetsenOne-Regular.ttf")){
+	if(!FONT.loadFromFile("assets/PoetsenOne-Regular.ttf")){
 		std::cout << "Error loading the font file" << std::endl;
 		return -1;
 	}	
