@@ -46,6 +46,9 @@ const sf::Vector2f COLOR_BUTTON_SIZE = {80,20};
 const sf::Vector2f COLOR_BUTTON_POS = {10,110};
 const std::string COLOR_BUTTON_TEXT = "Color";
 
+const sf::Vector2f SELECTED_COLOR_BOX_SIZE = {80,20};
+const sf::Vector2f SELECTED_COLOR_BOX_POS = {10,140};
+
 const int COLOR_PICKER_WIDTH = 255;
 const int COLOR_PICKER_HEIGHT = 255;
 const sf::Vector2f COLOR_PICKER_POS = {100,20};
@@ -57,6 +60,17 @@ const sf::Vector2f BLUE_SLIDER_HANDLE_SIZE = {15,15};
 const int MIN_BLUE_VALUE = 0;
 const int MAX_BLUE_VALUE = 255;
 const float BLUE_SLIDER_VALUE = 10;
+
+const int COLOR_GRID_WIDTH = 20;
+const int COLOR_GRID_HEIGHT = 20;
+const int COLOR_GRID_ROW = COLOR_PICKER_WIDTH/COLOR_GRID_WIDTH;
+const int COLOR_GRID_COL = 2;
+const sf::Vector2f COLOR_GRID_POS = {COLOR_PICKER_POS.x + (COLOR_PICKER_WIDTH - (COLOR_GRID_ROW * COLOR_GRID_WIDTH))/2,
+									 BLUE_SLIDER_POS.y + BLUE_SLIDER_TRACK_SIZE.y + 5};
+
+const sf::Vector2f ADD_COLOR_BUTTON_SIZE = {COLOR_GRID_WIDTH*COLOR_GRID_ROW - 10,20};
+const sf::Vector2f ADD_COLOR_BUTTON_POS = {COLOR_GRID_POS.x + 5,COLOR_GRID_POS.y + COLOR_GRID_HEIGHT*COLOR_GRID_COL + 5};
+const std::string ADD_COLOR_BUTTON_TEXT = "Add";
 
 // SLIDERS
 const int TRACK_SIZE_OFFSET = 4;
