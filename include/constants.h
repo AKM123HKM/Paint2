@@ -25,7 +25,7 @@ const sf::Color CLICK_TEXT_COLOR{255, 255, 255};  // bright text visible on dark
 
 const sf::Color INVALID_COLOR{0,0,0,0};
 
-sf::Font FONT;
+extern sf::Font FONT;
 
 const int SKETCHBOARD_WIDTH = WIDTH - 100;
 const int SKETCHBOARD_HEIGHT = HEIGHT;
