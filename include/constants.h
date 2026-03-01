@@ -4,7 +4,7 @@
 
 constexpr int WIDTH {800};
 constexpr int HEIGHT {600};
-const sf::Color BG_COLOR(150,150,150);
+const sf::Color BG_COLOR(255,255,255);
 const sf::Color GREEN_COLOR{0,255,0};
 const sf::Color RED_COLOR{255,0,0};
 

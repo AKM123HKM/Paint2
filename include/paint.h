@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <optional>
 #include "constants.h"
 #include "stroke.h"
 #include "sketchboard.h"
@@ -23,7 +24,7 @@ public:
     sf::Color stroke_color;
     Mouse mouse;
     Paint(sf::Vector2f aPos, int aWidth, int aHeight);
-    void handle_window_events(sf::Event event);
+    void handle_window_events(const std::optional event);
     void run(sf::RenderWindow& window);
     void draw(sf::RenderWindow& window);
 };

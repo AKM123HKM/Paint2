@@ -1,16 +1,16 @@
 #include "paint.h"
+#include <optional>
 
 Paint::Paint(sf::Vector2f aPos, int aWidth, int aHeight) : sketchboard(aPos, aWidth, aHeight), sidebar(*this) {
 }
 
-void Paint::handle_window_events(sf::Event event){
-    if (window_state == WindowState::Main)
-				if (event.type == sf::Event::MouseWheelScrolled) {
-				    if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
-				        float delta = event.mouseWheelScroll.delta;
-				        sketchboard.change_thickness(delta);
-				    }
-				}
+void Paint::handle_window_events(cosnt std::optional event){
+	if (const auto* scrollwheel = event->getIf<sf::Event::MouseWheelScrolled>()) {
+		if (scrollwheel->Wheel == sf::Mouse::Wheel::Vertical) {
+			float delta = event.mouseWheelScroll.delta;
+			sketchboard.change_thickness(delta);
+		}
+	}
 }
 
 void Paint::run(sf::RenderWindow& window){
@@ -25,7 +25,7 @@ void Paint::run(sf::RenderWindow& window){
 		}
 	}
 
-	auto left_result = mouse.get_button_state(sf::Mouse::Left,window);
+	auto left_result = mouse.get_button_state(sf::Mouse::Button::Left,window);
 	
 	if (window_state == WindowState::Button_UI || window_state == WindowState::Color_Picker){
 		sidebar.handle_button_collision(mouse_pos,left_result);
